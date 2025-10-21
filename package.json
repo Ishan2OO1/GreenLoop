@@ -3,16 +3,21 @@
   "version": "1.0.0",
   "description": "Development runner for ML Flask + React app",
   "scripts": {
-    "dev": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "dev": "npm run dev:windows",
+    "dev:windows": "start \"Flask Backend\" cmd /k \"cd backend-flask && python app.py\" && timeout 2 && start \"React Frontend\" cmd /k \"cd frontend-react && npm start\"",
+    "dev:powershell": "powershell -Command \"Start-Process powershell -ArgumentList '-NoExit', '-Command', 'cd backend-flask; python app.py' -WindowStyle Normal; Start-Sleep 2; Start-Process powershell -ArgumentList '-NoExit', '-Command', 'cd frontend-react; npm start' -WindowStyle Normal\"",
     "start:backend": "cd backend-flask && python app.py",
-    "start:frontend": "cd frontend-react && npm start",
+    "start:frontend": "cd frontend-react && npm start", 
     "install-all": "cd backend-flask && pip install -r requirements.txt && cd ../frontend-react && npm install",
     "test-api": "cd backend-flask && python comprehensive_test.py"
   },
-  "devDependencies": {
-    "concurrently": "^7.6.0"
-  },
-  "keywords": ["ml", "flask", "react", "development"],
+  "devDependencies": {},
+  "keywords": [
+    "ml",
+    "flask",
+    "react",
+    "development"
+  ],
   "author": "",
   "license": "MIT"
 }
