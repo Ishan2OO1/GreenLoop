@@ -82,14 +82,19 @@ def predict_ensemble(data):
                 'glass': 4
             }
             
-            # Convert process_type to numeric
+            # Convert process_type to numeric if it's a string
             if 'process_type' in input_df.columns:
-                process_val = input_df['process_type'].iloc[0].lower()
-                if process_val in process_type_map:
-                    input_df['process_type'] = process_type_map[process_val]
+                process_val = input_df['process_type'].iloc[0]
+                if isinstance(process_val, str):
+                    process_val = process_val.lower()
+                    if process_val in process_type_map:
+                        input_df.loc[0, 'process_type'] = process_type_map[process_val]
+                    else:
+                        print(f"⚠️ Unknown process type '{process_val}', using default (0)")
+                        input_df.loc[0, 'process_type'] = 0
                 else:
-                    print(f"⚠️ Unknown process type '{process_val}', using default (0)")
-                    input_df['process_type'] = 0
+                    # Already numeric, ensure it's an integer
+                    input_df.loc[0, 'process_type'] = int(float(process_val))
             
             # Ensure we have the expected columns in correct order
             expected_cols = ['process_type', 'energy_consumption_kwh_per_ton', 'ambient_temperature_c', 'humidity_percent']
@@ -98,7 +103,11 @@ def predict_ensemble(data):
             for col in expected_cols:
                 if col not in input_df.columns:
                     print(f"Warning: Missing column {col}, using default value")
-                    input_df[col] = 0
+                    input_df[col] = 0.0
+            
+            # Convert all columns to proper numeric types
+            for col in expected_cols:
+                input_df[col] = pd.to_numeric(input_df[col], errors='coerce').fillna(0.0)
             
             # Add Unnamed: 0 column (seems to be needed based on original error)
             input_df['Unnamed: 0'] = 0
@@ -107,7 +116,9 @@ def predict_ensemble(data):
             column_order = ['Unnamed: 0'] + expected_cols
             input_df = input_df[column_order]
             
-            X_processed = input_df.values
+            # Convert to float64 numpy array
+            X_processed = input_df.astype('float64').values
+            print(f"✅ Processed data shape: {X_processed.shape}, dtype: {X_processed.dtype}")
         
         # Get predictions from available models
         predictions = {}

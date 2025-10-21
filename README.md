@@ -28,64 +28,49 @@ BaseProject/
             └── PredictionForm.jsx     # Prediction form component
 ```
 
-## Setup Instructions
+## Quick Start
 
 ### Prerequisites
-
 - **Python 3.8+** with pip
 - **Node.js 16+** with npm
 - **Git** (already initialized)
 
-### Backend Setup (Flask API)
+### Option 1: Run Everything with One Command
+```bash
+# Install all dependencies and run both servers
+npm run install-all
+npm run dev
+```
 
-1. **Navigate to the backend directory:**
-   ```bash
-   cd backend-flask
-   ```
+### Option 2: Manual Setup
 
-2. **Create and activate a virtual environment:**
-   ```bash
-   python -m venv .venv
-   # On Windows:
-   .venv\Scripts\activate
-   # On macOS/Linux:
-   source .venv/bin/activate
-   ```
+#### Backend Setup (Flask API)
+```bash
+cd backend-flask
+python -m venv .venv
 
-3. **Install Python dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+# On Windows:
+.venv\Scripts\activate
+# On macOS/Linux:
+source .venv/bin/activate
 
-4. **Add your trained model:**
-   - Place your trained ML model file (`.pkl` or `.joblib`) in the `model/` directory
-   - The Flask app expects it to be named `model.pkl`
+pip install -r requirements.txt
+python app.py
+```
 
-5. **Run the Flask development server:**
-   ```bash
-   python app.py
-   ```
-   
-   The API will be available at: `http://localhost:5000`
+#### Frontend Setup (React)
+```bash
+cd frontend-react
+npm install
+npm start
+```
 
-### Frontend Setup (React)
-
-1. **Open a new terminal and navigate to the frontend directory:**
-   ```bash
-   cd frontend-react
-   ```
-
-2. **Install Node.js dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Start the React development server:**
-   ```bash
-   npm start
-   ```
-   
-   The React app will be available at: `http://localhost:3000`
+### Available npm Scripts
+- `npm run dev` - Run both backend and frontend concurrently
+- `npm run start:backend` - Run Flask API only
+- `npm run start:frontend` - Run React app only  
+- `npm run install-all` - Install all dependencies (Python + React)
+- `npm run test-api` - Test the Flask API endpoints
 
 ## Usage
 
@@ -182,6 +167,8 @@ This project demonstrates:
 - **RESTful API Design:** Clean HTTP-based communication
 - **Modern Development Practices:** Package management, virtual environments, version control
 - **Scalable Structure:** Easy to extend with additional features
+
+📖 **Detailed Design:** See [`docs/ProjectDesign.md`](docs/ProjectDesign.md) for the complete architecture overview.
 
 ## Next Steps
 
