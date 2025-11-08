@@ -3,7 +3,7 @@
     "builder": "nixpacks"
   },
   "deploy": {
-    "startCommand": "cd backend-flask && python -u start.py",
+    "startCommand": "cd backend-flask && python -u test_minimal.py",
     "healthcheckPath": "/api/status",
     "healthcheckTimeout": 300,
     "restartPolicyType": "on_failure"

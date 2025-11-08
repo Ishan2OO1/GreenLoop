@@ -1,1 +1,1 @@
-web: cd backend-flask && python -u start.py
+web: cd backend-flask && python -u test_minimal.py

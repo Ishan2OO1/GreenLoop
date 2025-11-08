@@ -7,4 +7,4 @@ cmds = [
 ]
 
 [start]
-cmd = "cd backend-flask && python -u start.py"
+cmd = "cd backend-flask && python -u test_minimal.py"
