@@ -1,1 +1,0 @@
-web: cd backend-flask && python -u start.py

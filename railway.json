@@ -1,9 +1,10 @@
 {
   "build": {
-    "builder": "nixpacks"
+    "builder": "dockerfile",
+    "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "cd backend-flask && python -u start.py",
+    "startCommand": "python -u start.py",
     "healthcheckPath": "/api/status",
     "healthcheckTimeout": 300,
     "restartPolicyType": "on_failure"
