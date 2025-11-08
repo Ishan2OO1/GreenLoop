@@ -1,0 +1,1 @@
+web: cd backend-flask && python app.py

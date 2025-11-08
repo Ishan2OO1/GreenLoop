@@ -720,10 +720,11 @@ def tabnet_info():
 if __name__ == '__main__':
     print("🚀 Starting GreenLoop Flask API (Ensemble Model)...")
     if load_models():
-        print("✅ Server ready on http://localhost:5000")
+        port = int(os.environ.get('PORT', 5000))
+        print(f"✅ Server ready on http://localhost:{port}")
         print(f"🎯 Using 2-model ensemble: XGBoost (50%) + Random Forest (50%)")
         print(f"📊 Loaded models: {list(models.keys())}")
         print(f"⚖️ Active models: {len([name for name in models.keys() if name in ['XGBoost', 'Random Forest']])} models")
-        app.run(host='0.0.0.0', port=5000, debug=True)
+        app.run(host='0.0.0.0', port=port, debug=False)
     else:
         print("❌ Failed to start - models not loaded")
