@@ -1,14 +1,12 @@
-# Don't use Nix Python packages - they have conflicts
-# Use system Python and pip to install everything fresh
+# Use Nix Python but override the externally-managed restriction
 
 [phases.setup]
-nixPkgs = ["python312", "gcc"]
+nixPkgs = ["python312", "python312Packages.pip", "gcc"]
 
 [phases.install]
 cmds = [
-  "python -m ensurepip --upgrade",
-  "python -m pip install --upgrade pip setuptools wheel",
-  "cd backend-flask && python -m pip install --no-cache-dir -r requirements.txt"
+  "cd backend-flask && pip install --break-system-packages --no-cache-dir --upgrade pip setuptools wheel",
+  "cd backend-flask && pip install --break-system-packages --no-cache-dir -r requirements.txt"
 ]
 
 [start]
