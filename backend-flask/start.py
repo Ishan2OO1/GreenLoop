@@ -5,10 +5,39 @@ This script ensures proper initialization and provides detailed logging
 """
 import sys
 import os
+import time
 
 # Force unbuffered output
 sys.stdout.reconfigure(line_buffering=True)
 sys.stderr.reconfigure(line_buffering=True)
+
+MAX_RETRIES = 3
+RETRY_DELAY = 5  # seconds
+
+def try_import_with_retry():
+    """Try to import Flask app with retries"""
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            print(f"\n📦 Import attempt {attempt}/{MAX_RETRIES}...", flush=True)
+            from app import app, load_models
+            print("✅ Successfully imported Flask app!", flush=True)
+            return app, load_models
+        except ImportError as e:
+            print(f"❌ Import failed (attempt {attempt}/{MAX_RETRIES}): {e}", flush=True)
+            if "numpy" in str(e).lower():
+                print("⚠️  This appears to be a numpy conflict issue", flush=True)
+                print("⚠️  Trying to work around it...", flush=True)
+                
+                # Try to clean up any conflicting paths
+                if 'PYTHONPATH' in os.environ:
+                    print(f"   Current PYTHONPATH: {os.environ['PYTHONPATH']}", flush=True)
+                
+            if attempt < MAX_RETRIES:
+                print(f"   Retrying in {RETRY_DELAY} seconds...", flush=True)
+                time.sleep(RETRY_DELAY)
+            else:
+                print("\n❌ All import attempts failed!", flush=True)
+                raise
 
 print("=" * 50, flush=True)
 print("🚀 GreenLoop Backend Starting on Railway", flush=True)
@@ -18,6 +47,7 @@ print("=" * 50, flush=True)
 print(f"Python Version: {sys.version}", flush=True)
 print(f"Current Directory: {os.getcwd()}", flush=True)
 print(f"PORT: {os.environ.get('PORT', 'NOT SET')}", flush=True)
+print(f"Python Path: {sys.path[:3]}", flush=True)
 
 # List files to verify deployment
 print("\n📁 Files in current directory:", flush=True)
@@ -48,10 +78,9 @@ print("\n" + "=" * 50, flush=True)
 print("Starting Flask Application...", flush=True)
 print("=" * 50 + "\n", flush=True)
 
-# Import and run the Flask app
+# Import and run the Flask app with retries
 try:
-    print("Importing Flask app...", flush=True)
-    from app import app, load_models
+    app, load_models = try_import_with_retry()
     
     print("Loading models...", flush=True)
     models_loaded = load_models()
@@ -72,5 +101,7 @@ except Exception as e:
     print(f"\n❌ FATAL ERROR during startup: {e}", flush=True)
     import traceback
     traceback.print_exc()
-    print("\nExiting with error code 1", flush=True)
+    print("\n⏱️  Waiting 10 seconds before exit to allow log collection...", flush=True)
+    time.sleep(10)
+    print("Exiting with error code 1", flush=True)
     sys.exit(1)

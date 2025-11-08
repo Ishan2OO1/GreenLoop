@@ -1,10 +1,14 @@
+# Don't use Nix Python packages - they have conflicts
+# Use system Python and pip to install everything fresh
+
 [phases.setup]
-nixPkgs = ["python312", "python312Packages.pip", "gcc"]
+nixPkgs = ["python312", "gcc"]
 
 [phases.install]
 cmds = [
-  "cd backend-flask && pip install --break-system-packages --no-cache-dir --force-reinstall numpy",
-  "cd backend-flask && pip install --break-system-packages --no-cache-dir -r requirements.txt"
+  "python -m ensurepip --upgrade",
+  "python -m pip install --upgrade pip setuptools wheel",
+  "cd backend-flask && python -m pip install --no-cache-dir -r requirements.txt"
 ]
 
 [start]
