@@ -719,12 +719,18 @@ def tabnet_info():
 
 if __name__ == '__main__':
     print("🚀 Starting GreenLoop Flask API (Ensemble Model)...")
-    if load_models():
-        port = int(os.environ.get('PORT', 5000))
+    models_loaded = load_models()
+    
+    port = int(os.environ.get('PORT', 5000))
+    
+    if models_loaded:
         print(f"✅ Server ready on http://localhost:{port}")
         print(f"🎯 Using 2-model ensemble: XGBoost (50%) + Random Forest (50%)")
-        print(f"📊 Loaded models: {list(models.keys())}")
-        print(f"⚖️ Active models: {len([name for name in models.keys() if name in ['XGBoost', 'Random Forest']])} models")
-        app.run(host='0.0.0.0', port=port, debug=False)
+        print(f"📊 Loaded models: {list(models.keys()) if models else []}")
+        print(f"⚖️ Active models: {len([name for name in models.keys() if name in ['XGBoost', 'Random Forest']]) if models else 0} models")
     else:
-        print("❌ Failed to start - models not loaded")
+        print(f"⚠️ WARNING: Models failed to load, but server will start anyway")
+        print(f"⚠️ The /api/status endpoint will work but predictions will fail")
+    
+    print(f"🚀 Starting Flask server on 0.0.0.0:{port}")
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
