@@ -8,4 +8,4 @@ cmds = [
 ]
 
 [start]
-cmd = "cd backend-flask && python -u app.py"
+cmd = "cd backend-flask && python -u start.py"
