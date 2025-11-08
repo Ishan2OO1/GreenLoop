@@ -3,7 +3,8 @@ nixPkgs = ["python312", "python312Packages.pip", "gcc"]
 
 [phases.install]
 cmds = [
-  "cd backend-flask && pip install --break-system-packages -r requirements.txt"
+  "cd backend-flask && pip install --break-system-packages --no-cache-dir --force-reinstall numpy",
+  "cd backend-flask && pip install --break-system-packages --no-cache-dir -r requirements.txt"
 ]
 
 [start]
