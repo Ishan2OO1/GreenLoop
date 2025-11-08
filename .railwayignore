@@ -1,0 +1,27 @@
+# Ignore frontend files
+frontend-react/
+node_modules/
+package.json
+package-lock.json
+
+# Ignore screenshots
+Screenshots/
+
+# Ignore Jupyter notebooks
+backend-flask/jupyter-notebook/
+
+# Ignore cache and temp files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.log
+
+# Ignore git files
+.git/
+.gitignore
+
+# Ignore env files (use Railway's environment variables instead)
+.env
+.env.local

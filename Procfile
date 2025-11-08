@@ -1,1 +1,1 @@
-web: cd backend-flask && python app.py
+web: cd backend-flask && python -u app.py
