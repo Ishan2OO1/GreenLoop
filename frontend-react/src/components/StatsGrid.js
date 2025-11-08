@@ -155,10 +155,9 @@ const StatDescription = styled.div`
   font-style: italic;
 `;
 
-const StatsGrid = ({ modelCount = 2, modelNames = [], ensembleRMSE }) => {
+const StatsGrid = ({ modelCount = 2, modelNames = [] }) => {
   const [animatedValues, setAnimatedValues] = useState({
     models: 0,
-    accuracy: 0,
     dataPoints: 0,
     predictions: 0
   });
@@ -166,7 +165,6 @@ const StatsGrid = ({ modelCount = 2, modelNames = [], ensembleRMSE }) => {
   useEffect(() => {
     const targets = {
       models: modelCount,
-      accuracy: ensembleRMSE ? Math.max(85, 100 - ensembleRMSE) : 92,
       dataPoints: 242, // From your training data
       predictions: 1000
     };
@@ -191,7 +189,7 @@ const StatsGrid = ({ modelCount = 2, modelNames = [], ensembleRMSE }) => {
         }
       }, duration / steps);
     });
-  }, [modelCount, ensembleRMSE]);
+  }, [modelCount]);
 
     const stats = [
     { 
@@ -203,16 +201,16 @@ const StatsGrid = ({ modelCount = 2, modelNames = [], ensembleRMSE }) => {
     },
     { 
       icon: FaChartLine,
-      value: `${animatedValues.accuracy.toFixed(1)}%`,
-      label: 'AI Prediction Accuracy',
-      description: `RMSE: ${ensembleRMSE?.toFixed(2) || '24.5'} kg CO2e/ton`,
+      value: 'Advanced',
+      label: 'AI Ensemble Method',
+      description: 'Dynamic weighted predictions',
       gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)'
     },
     { 
       icon: FaDatabase,
       value: Math.round(animatedValues.dataPoints),
       label: 'Training Data Points',
-      description: '28 features across 10 process types',
+      description: '28 features across 12 process types',
       gradient: 'linear-gradient(135deg, #8b5cf6, #7c3aed)'
     },
       { 

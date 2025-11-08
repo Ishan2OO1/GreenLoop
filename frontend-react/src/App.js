@@ -163,8 +163,8 @@ function App() {
             whileHover={{ scale: 1.05 }}
           >
             {apiStatus.models_loaded 
-              ? `Models Ready • Accuracy: ${(100 - (apiStatus.ensemble_rmse || 24.5)).toFixed(1)}% • RMSE: ${apiStatus.ensemble_rmse?.toFixed(2) || '24.5'}`
-              : 'Models Loading...'
+              ? `✅ ${apiStatus.model_count || 2} AI Models Ready • ${apiStatus.strategy || 'Ensemble'} Method Active`
+              : '🔄 Models Loading...'
             }
           </StatusIndicator>
         )}
@@ -205,7 +205,6 @@ function App() {
             <StatsGrid 
               modelCount={apiStatus.available_models?.length || 0}
               modelNames={apiStatus.available_models || []}
-              ensembleRMSE={apiStatus.ensemble_rmse}
             />
           </Card>
         )}

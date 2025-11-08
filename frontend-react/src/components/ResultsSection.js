@@ -12,7 +12,6 @@ import {
   FaThumbsUp,
   FaThumbsDown,
   FaBalanceScale,
-  FaCogs,
   FaTrophy,
   FaRocket
 } from 'react-icons/fa';
@@ -196,90 +195,6 @@ const SustainabilityBadge = styled(motion.div)`
   }}
 `;
 
-const ModelResults = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin: 2rem 0;
-`;
-
-const ModelCard = styled(motion.div)`
-  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: 
-    0 10px 25px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.6);
-  border: 2px solid transparent;
-  position: relative;
-  overflow: hidden;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #10b981, #3b82f6);
-  }
-  
-  &:hover {
-    border-color: #10b981;
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  }
-`;
-
-const ModelHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-`;
-
-const ModelName = styled.div`
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--neutral-700);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`;
-
-const ModelBadge = styled.div`
-  background: ${props => props.isPrimary ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #6b7280, #4b5563)'};
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-`;
-
-const ModelValue = styled(motion.div)`
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--primary-green);
-  margin: 0.5rem 0;
-`;
-
-const ConfidenceBar = styled.div`
-  width: 100%;
-  height: 8px;
-  background: var(--neutral-200);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-top: 1rem;
-`;
-
-const ConfidenceFill = styled(motion.div)`
-  height: 100%;
-  background: linear-gradient(90deg, #10b981, #059669);
-  border-radius: 4px;
-`;
-
 const InputSummary = styled.div`
   background: var(--neutral-50);
   border-radius: 12px;
@@ -380,7 +295,7 @@ const ResultsSection = ({ result }) => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <FaCogs style={{ color: '#10b981' }} />
+          <FaRocket style={{ color: '#10b981' }} />
           Prediction Center
         </motion.h2>
         
@@ -488,59 +403,6 @@ const ResultsSection = ({ result }) => {
           {sustainability.text}
         </SustainabilityBadge>
       </ResultCard>
-
-      <ModelResults>
-        {Object.entries(result.individual_predictions || {}).map(([modelName, value], index) => {
-          const isPrimary = ['XGBoost', 'Random Forest'].includes(modelName);
-          return (
-            <ModelCard 
-              key={modelName}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 + index * 0.1, duration: 0.5 }}
-              whileHover={{ 
-                scale: 1.02,
-                boxShadow: "0 25px 50px rgba(0, 0, 0, 0.2)"
-              }}
-            >
-                  <ModelHeader>
-                    <ModelName>
-                      <FaCogs style={{ color: '#10b981' }} />
-                      {modelName}
-                    </ModelName>
-                    <ModelBadge isPrimary={isPrimary}>
-                      {isPrimary ? 'Primary' : 'Support'}
-                    </ModelBadge>
-                  </ModelHeader>
-              
-              <ModelValue
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 1 + index * 0.1, type: "spring" }}
-              >
-                {value.toFixed(2)}
-              </ModelValue>
-              
-              <ConfidenceBar>
-                <ConfidenceFill
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min((100 - Math.abs(value - result.prediction) / result.prediction * 100), 100)}%` }}
-                  transition={{ delay: 1.2 + index * 0.1, duration: 0.8 }}
-                />
-              </ConfidenceBar>
-              
-              <div style={{ 
-                fontSize: '0.75rem', 
-                color: 'var(--neutral-500)', 
-                marginTop: '0.5rem',
-                textAlign: 'center'
-              }}>
-                Accuracy: {Math.min((100 - Math.abs(value - result.prediction) / result.prediction * 100), 100).toFixed(1)}%
-              </div>
-            </ModelCard>
-          );
-        })}
-      </ModelResults>
 
       <InputSummary>
         <InputTitle>

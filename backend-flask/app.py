@@ -54,12 +54,14 @@ def load_models():
         # Check TabNet availability only when needed
         TABNET_AVAILABLE = check_tabnet_availability()
         
-        # Try to load the newest ensemble models first (including TabNet)
+        # Try to load the 2-model ensemble first (XGBoost + Random Forest only)
         model_files = [
-            "model/ensemble_with_tabnet.pkl",  # New models with TabNet
-            "model/ensemble_models.pkl",       # Comprehensive models
-            "model/ensemble_safe.pkl",         # Fallback safe models
-            "model/ensemble_top3.pkl"          # Another fallback
+            "model/ensemble_xgb_rf_only.pkl",     # NEW: Only XGBoost + Random Forest
+            "model/ensemble_models_improved.pkl", # Fallback: Improved models from Prototype3 (RMSE ~21-30)
+            "model/ensemble_with_tabnet.pkl",     # Models with TabNet
+            "model/ensemble_models.pkl",          # Comprehensive models
+            "model/ensemble_safe.pkl",            # Fallback safe models
+            "model/ensemble_top3.pkl"             # Another fallback
         ]
         
         models_loaded = False
@@ -140,8 +142,10 @@ def load_models():
         if tabnet_loaded:
             print("🧠 TabNet successfully loaded and integrated!")
         
-        # Load preprocessing components
+        # Load preprocessing components (prioritize Prototype3)
         preprocessing_files = [
+            "preprocessing_info_3_prototype3.pkl",  # BEST: Complete Prototype3 preprocessing
+            "model/preprocessing_improved.pkl",     # Improved preprocessing from Prototype3
             "model/preprocessing.pkl",
             "model/preprocessing_safe.pkl"
         ]
@@ -161,6 +165,7 @@ def load_models():
         
         # Load model info (including TabNet info if available)
         info_files = [
+            "model/model_info_improved.pkl",     # NEW: Improved model info from Prototype3
             "model/model_info_with_tabnet.pkl",  # Enhanced info with TabNet
             "model/model_info.pkl",              # Standard info
             "model/model_info_safe.pkl"          # Fallback info
@@ -204,29 +209,29 @@ def load_models():
         return False
 
 def calculate_ensemble_weights():
-    """Calculate dynamic ensemble weights based on model performance"""
-    if not model_info or 'individual_rmse' not in model_info:
-        # Equal weights if no performance data
+    """Use only XGBoost and Random Forest with equal weights (50% each)"""
+    weights = {}
+    
+    # Only use XGBoost and Random Forest with equal weights
+    target_models = ['XGBoost', 'Random Forest']
+    available_target_models = [name for name in models.keys() if name in target_models]
+    
+    if len(available_target_models) == 0:
+        # Fallback to all available models with equal weights if neither XGBoost nor RF available
+        print("⚠️ Neither XGBoost nor Random Forest available, using all models equally")
         return {name: 1.0 / len(models) for name in models.keys()}
     
-    weights = {}
-    total_inv_rmse = 0
+    # Give equal weight to available target models, zero to others
+    equal_weight = 1.0 / len(available_target_models)
     
-    # Calculate weights as inverse of RMSE (better models get higher weights)
     for name in models.keys():
-        if name in model_info['individual_rmse']:
-            rmse = model_info['individual_rmse'][name]
-            inv_rmse = 1.0 / max(rmse, 1.0)  # Avoid division by zero
-            weights[name] = inv_rmse
-            total_inv_rmse += inv_rmse
+        if name in available_target_models:
+            weights[name] = equal_weight
         else:
-            weights[name] = 0.1  # Low weight for unknown performance
-            total_inv_rmse += 0.1
+            weights[name] = 0.0  # Exclude other models
     
-    # Normalize weights to sum to 1
-    if total_inv_rmse > 0:
-        for name in weights:
-            weights[name] = weights[name] / total_inv_rmse
+    print(f"🎯 Using equal weights for: {available_target_models}")
+    print(f"⚖️ Weights: {[(name, weights[name]) for name in weights if weights[name] > 0]}")
     
     return weights
 
@@ -240,26 +245,67 @@ def predict_ensemble(data):
         
         # Apply preprocessing if available
         if preprocessing and isinstance(preprocessing, dict):
-            print("✅ Using advanced preprocessing pipeline")
+            print("✅ Using Prototype3 preprocessing pipeline")
             
-            # Handle categorical encoding
-            if 'label_encoders' in preprocessing:
-                for col, encoder in preprocessing['label_encoders'].items():
-                    if col in input_df.columns:
-                        val = input_df[col].iloc[0]
-                        if isinstance(val, str):
-                            val = val.lower()
-                        
-                        # Handle unknown categories
-                        if val in encoder.classes_:
-                            input_df[col] = encoder.transform([val])
-                        else:
-                            # Use first class as default
-                            print(f"⚠️ Unknown {col}: '{val}', using default")
-                            input_df[col] = encoder.transform([encoder.classes_[0]])
-            
-            # Handle numerical scaling
-            if 'scaler' in preprocessing:
+            # Check if we have the new Prototype3 preprocessing structure
+            if 'standard_preprocessor' in preprocessing:
+                print("🎯 Using complete Prototype3 preprocessing")
+                
+                # Required columns for Prototype3
+                required_cols = ['Unnamed: 0', 'energy_consumption_kwh_per_ton', 'ambient_temperature_c', 'humidity_percent', 'process_type']
+                
+                # Ensure all required columns are present with defaults
+                if 'Unnamed: 0' not in input_df.columns:
+                    input_df['Unnamed: 0'] = 0  # Index column
+                if 'energy_consumption_kwh_per_ton' not in input_df.columns:
+                    input_df['energy_consumption_kwh_per_ton'] = data.get('energy_consumption_kwh_per_ton', 100.0)
+                if 'ambient_temperature_c' not in input_df.columns:
+                    input_df['ambient_temperature_c'] = data.get('ambient_temperature_c', 25.0)
+                if 'humidity_percent' not in input_df.columns:
+                    input_df['humidity_percent'] = data.get('humidity_percent', 50.0)
+                if 'process_type' not in input_df.columns:
+                    input_df['process_type'] = data.get('process_type', 'production')
+                
+                # *** CRITICAL FIX: Map frontend process types to preprocessing pipeline categories ***
+                if 'process_type' in input_df.columns:
+                    process_type_map = {
+                        'shredding': 'shredding',
+                        'separation': 'separation',
+                        'melting': 'melting',
+                        'pyrolysis': 'pyrolysis',
+                        'chemical': 'chemical',
+                        'recycling': 'recycling',
+                        'composting': 'composting',
+                        'production': 'production',
+                        'recovery': 'metal_recovery',  # Map recovery to metal_recovery
+                        'treatment': 'c-si_treatment',  # Map treatment to c-si_treatment
+                        'incineration': 'incineration',
+                        'landfill': 'landfill',
+                        # Legacy mappings
+                        'cement': 'production',
+                        'steel': 'production', 
+                        'aluminum': 'recycling',
+                        'plastic': 'plastic_recovery_processing',
+                        'glass': 'glass_recovery'
+                    }
+                    
+                    original_process = input_df['process_type'].iloc[0]
+                    if isinstance(original_process, str):
+                        mapped_process = process_type_map.get(original_process.lower(), 'production')
+                        input_df['process_type'] = mapped_process
+                        print(f"🔄 Mapped process type: '{original_process}' -> '{mapped_process}'")
+                
+                # Reorder columns to match training
+                input_df = input_df[required_cols]
+                print(f"📊 Input data shape: {input_df.shape}, columns: {list(input_df.columns)}")
+                
+                # Apply the complete preprocessing pipeline
+                X_processed = preprocessing['standard_preprocessor'].transform(input_df)
+                print(f"✅ Preprocessing completed. Output shape: {X_processed.shape}")
+                
+            # Fallback to old preprocessing logic
+            elif 'scaler' in preprocessing:
+                print("⚠️ Using fallback preprocessing")
                 feature_names = preprocessing.get('feature_names', input_df.columns.tolist())
                 
                 # Ensure all required features are present
@@ -299,14 +345,34 @@ def predict_ensemble(data):
             
             # Handle basic categorical encoding for process_type
             if 'process_type' in input_df.columns:
+                # Map frontend process types to actual categories expected by preprocessing pipeline
+                # Based on the categories found in preprocessing_info_3_prototype3.pkl
                 process_type_map = {
-                    'cement': 0, 'steel': 1, 'aluminum': 2, 'plastic': 3, 'glass': 4
+                    'shredding': 'shredding',
+                    'separation': 'separation',
+                    'melting': 'melting',
+                    'pyrolysis': 'pyrolysis',
+                    'chemical': 'chemical',
+                    'recycling': 'recycling',
+                    'composting': 'composting',
+                    'production': 'production',
+                    'recovery': 'metal_recovery',  # Map to available recovery category
+                    'treatment': 'c-si_treatment',  # Map to available treatment category
+                    'incineration': 'incineration',
+                    'landfill': 'landfill',
+                    # Legacy mappings for backward compatibility
+                    'cement': 'production',
+                    'steel': 'production', 
+                    'aluminum': 'recycling',
+                    'plastic': 'plastic_recovery_processing',
+                    'glass': 'glass_recovery'
                 }
                 
                 process_val = input_df['process_type'].iloc[0]
                 if isinstance(process_val, str):
                     process_val = process_val.lower()
-                    input_df['process_type'] = process_type_map.get(process_val, 0)
+                    mapped_val = process_type_map.get(process_val, 'production')  # default to production
+                    input_df['process_type'] = mapped_val
             
             # Ensure basic required columns exist
             required_cols = ['process_type', 'energy_consumption_kwh_per_ton', 
@@ -330,17 +396,17 @@ def predict_ensemble(data):
         predictions = {}
         for model_name, model in models.items():
             try:
-                if model_name == 'TabNet' and TABNET_AVAILABLE:
+                if model_name == 'TabNet' and TABNET_AVAILABLE and TabNetRegressor:
                     # Special handling for TabNet
                     X_tabnet = X_processed.reshape(1, -1).astype(np.float32)
                     pred = float(model.predict(X_tabnet)[0])
                     predictions[model_name] = pred
-                    print(f"✅ {model_name} (TabNet) prediction: {pred:.2f} kg CO2e/ton")
+                    print(f"✅ {model_name} (TabNet) prediction: {pred:.2f} kg CO₂e/ton")
                 else:
                     # Standard sklearn-compatible models
                     pred = float(model.predict(X_processed.reshape(1, -1))[0])
                     predictions[model_name] = pred
-                    print(f"✅ {model_name} prediction: {pred:.2f} kg CO2e/ton")
+                    print(f"✅ {model_name} prediction: {pred:.2f} kg CO₂e/ton")
             except Exception as e:
                 print(f"❌ Error with {model_name}: {e}")
                 continue
@@ -382,7 +448,7 @@ def predict_ensemble(data):
             'individual_predictions': {k: round(v, 2) for k, v in predictions.items()},
             'weights_used': {k: round(v, 3) for k, v in active_weights.items()},
             'confidence': round(confidence, 3),
-            'strategy': 'dynamic_weighted_ensemble',
+            'strategy': '2_model_ensemble_xgb_rf',
             'models_used': list(predictions.keys()),
             'input_processed': True
         }
@@ -472,7 +538,7 @@ def predict():
             'weights_used': result['weights_used'],
             'confidence': result.get('confidence', 0.8),
             'strategy': result['strategy'],
-            'unit': 'kg CO2e per ton',
+            'unit': 'kg CO₂e per ton',
             'impact_level': impact_level,
             'impact_color': impact_color,
             'input_data': data,
@@ -519,7 +585,7 @@ def model_info_route():
         'training_date': model_info.get('training_date') if model_info else None,
         'preprocessing_available': preprocessing is not None,
         'api_version': '2.0',
-        'note': 'Advanced ensemble with dynamic weighting based on model performance'
+        'note': '2-model ensemble: XGBoost + Random Forest with equal weights (50%-50%)'
     })
 
 @app.route('/api/train-models', methods=['POST'])
@@ -654,9 +720,10 @@ def tabnet_info():
 if __name__ == '__main__':
     print("🚀 Starting GreenLoop Flask API (Ensemble Model)...")
     if load_models():
-        print("✅ Server ready on http://127.0.0.1:5000")
-        print(f"🎯 Using ensemble of {len(models)} models with dynamic weighting")
-        print(f"📊 Available models: {list(models.keys())}")
-        app.run(host='127.0.0.1', port=5000, debug=True)
+        print("✅ Server ready on http://localhost:5000")
+        print(f"🎯 Using 2-model ensemble: XGBoost (50%) + Random Forest (50%)")
+        print(f"📊 Loaded models: {list(models.keys())}")
+        print(f"⚖️ Active models: {len([name for name in models.keys() if name in ['XGBoost', 'Random Forest']])} models")
+        app.run(host='0.0.0.0', port=5000, debug=True)
     else:
         print("❌ Failed to start - models not loaded")

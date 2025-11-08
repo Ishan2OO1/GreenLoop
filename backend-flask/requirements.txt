@@ -1,6 +1,15 @@
-Flask==2.3.3
+Flask==3.0.0
 flask-cors==4.0.0
-numpy==1.24.3
-pandas==2.0.3
-scikit-learn==1.3.0
-joblib==1.3.2
+numpy>=1.26.0
+pandas>=2.1.0
+scikit-learn>=1.3.0
+joblib>=1.3.2
+xgboost>=1.7.0
+setuptools
+
+# Optional packages for enhanced TabNet model support
+# Note: These packages are large (500MB+) and may have Windows DLL issues
+# The app works perfectly without them using XGBoost + Random Forest
+# Uncomment below lines if you want TabNet support:
+# pytorch-tabnet
+# torch

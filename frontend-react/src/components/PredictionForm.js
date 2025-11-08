@@ -253,29 +253,33 @@ const IconWrapper = styled(motion.span)`
 `;
 
 const processOptions = [
-  { value: 'melting', label: 'Melting Process' },
-  { value: 'chemical', label: 'Chemical Processing' },
-  { value: 'pyrolysis', label: 'Pyrolysis' },
-  { value: 'separation', label: 'Separation Process' },
-  { value: 'recycling', label: 'Recycling' },
   { value: 'shredding', label: 'Shredding' },
-  { value: 'incineration', label: 'Incineration' },
+  { value: 'separation', label: 'Separation Process' },
+  { value: 'melting', label: 'Melting Process' },
+  { value: 'pyrolysis', label: 'Pyrolysis' },
+  { value: 'chemical', label: 'Chemical Processing' },
+  { value: 'recycling', label: 'Recycling' },
   { value: 'composting', label: 'Composting' },
-  { value: 'landfill', label: 'Landfill' },
-  { value: 'production', label: 'Production' }
+  { value: 'production', label: 'Production' },
+  { value: 'recovery', label: 'Recovery' },
+  { value: 'treatment', label: 'Treatment' },
+  { value: 'incineration', label: 'Incineration' },
+  { value: 'landfill', label: 'Landfill' }
 ];
 
 const processDescriptions = {
-  'melting': 'Thermal process that converts solid materials to liquid state through heat application.',
-  'chemical': 'Chemical transformation processes involving reactions using chemical agents.',
-  'pyrolysis': 'Thermal decomposition process in the absence of oxygen.',
-  'separation': 'Process of dividing mixed materials into different components.',
-  'recycling': 'Process of converting waste materials into reusable materials.',
   'shredding': 'Mechanical size reduction process that breaks down materials.',
-  'incineration': 'Controlled combustion process for waste disposal with energy recovery.',
+  'separation': 'Process of dividing mixed materials into different components.',
+  'melting': 'Thermal process that converts solid materials to liquid state through heat application.',
+  'pyrolysis': 'Thermal decomposition process in the absence of oxygen.',
+  'chemical': 'Chemical transformation processes involving reactions using chemical agents.',
+  'recycling': 'Process of converting waste materials into reusable materials.',
   'composting': 'Biological decomposition process that converts organic waste.',
-  'landfill': 'Waste disposal method involving burial in designated sites.',
-  'production': 'General manufacturing and production processes.'
+  'production': 'General manufacturing and production processes.',
+  'recovery': 'Material recovery and extraction processes from waste streams.',
+  'treatment': 'Processing and treatment of materials for conditioning or purification.',
+  'incineration': 'Controlled combustion process for waste disposal with energy recovery.',
+  'landfill': 'Waste disposal method involving burial in designated sites.'
 };
 
 const PredictionForm = ({ formData, setFormData, onPredict, loading }) => {
