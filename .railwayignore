@@ -10,6 +10,12 @@ Screenshots/
 # Ignore Jupyter notebooks
 backend-flask/jupyter-notebook/
 
+# Ignore Python virtual environments
+backend-flask/.venv/
+.venv/
+venv/
+env/
+
 # Ignore cache and temp files
 __pycache__/
 *.pyc
@@ -17,6 +23,9 @@ __pycache__/
 *.pyd
 .Python
 *.log
+*.egg-info/
+dist/
+build/
 
 # Ignore git files
 .git/
